@@ -1,5 +1,7 @@
 package com.ifsul.web2primeiro.dtos;
 
-public record CategoriaDTO() {
+import jakarta.validation.constraints.NotBlank;
+
+public record CategoriaDTO(@NotBlank String nome) {
 
 }
