@@ -19,80 +19,80 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.ifsul.web2primeiro.dtos.CategoriaDTO;
-import com.ifsul.web2primeiro.model.Categorias;
-import com.ifsul.web2primeiro.repository.CategoriaRepository;
+import com.ifsul.web2primeiro.dtos.ProfessorDTO;
+import com.ifsul.web2primeiro.model.Professores;
+import com.ifsul.web2primeiro.repository.ProfessoresRepository;
 
 import jakarta.validation.Valid;
 
 @Controller
-@RequestMapping("/categoria")
-public class CategoriasController {
+@RequestMapping("/professores")
+public class ProfessoresController {
     @Autowired
-    CategoriaRepository repository;
+    ProfessoresRepository repository;
 
     @GetMapping("/inserir")
     public String inserir() {
-        return "categoria/inserir";
+        return "professores/inserir";
     }
 
     @PostMapping("/inserir")
     public String inserido(
-            @ModelAttribute @Valid CategoriaDTO dto,
+            @ModelAttribute @Valid ProfessorDTO dto,
             BindingResult result, RedirectAttributes msg) {
         if (result.hasErrors()) {
             msg.addFlashAttribute("Erro ao Inserir");
-            return "redirect:/categoria/inserir";
+            return "redirect:/professores/inserir";
         }
-        var categoria = new Categorias();
-        BeanUtils.copyProperties(dto, categoria);
-        repository.save(categoria);
-        msg.addFlashAttribute("SucessoCadastrar", "Categoria cadastrada com sucesso!");
-        return "redirect:/categoria/inserir";
+        var professores = new Professores();
+        BeanUtils.copyProperties(dto, professores);
+        repository.save(professores);
+        msg.addFlashAttribute("SucessoCadastrar", "Professor cadastrado com sucesso!");
+        return "redirect:/professores/inserir";
     }
 
     @GetMapping("/listar")
     public ModelAndView listar() {
-        ModelAndView mv = new ModelAndView("categoria/listar");
-        List<Categorias> lista = repository.findAll();
-        mv.addObject("categorias", lista);
+        ModelAndView mv = new ModelAndView("professores/listar");
+        List<Professores> lista = repository.findAll();
+        mv.addObject("professores", lista);
         return mv;
     }
 
     @GetMapping("/excluir/{id}")
     public String excluir(@PathVariable(value = "id") int id) {
-        Optional<Categorias> categoria = repository.findById(id);
-        if (categoria.isEmpty()) {
-            return "redirect:/categoria/listar";
+        Optional<Professores> professores = repository.findById(id);
+        if (professores.isEmpty()) {
+            return "redirect:/professores/listar";
         }
         repository.deleteById(id);
-        return "redirect:/categoria/listar";
+        return "redirect:/professores/listar";
     }
 
     @GetMapping("/editar/{id}")
     public ModelAndView editar(@PathVariable(value = "id") int id) {
-        ModelAndView mv = new ModelAndView("categoria/editar");
-        Optional<Categorias> categoria = repository.findById(id);
-        mv.addObject("id", categoria.get().getID());
-        mv.addObject("nome", categoria.get().getNome());
+        ModelAndView mv = new ModelAndView("professores/editar");
+        Optional<Professores> professores = repository.findById(id);
+        mv.addObject("id", professores.get().getID());
+        mv.addObject("nome", professores.get().getNome());
         return mv;
     }
 
     @PostMapping("/editar/{id}")
     public String editado(
-            @ModelAttribute @Valid CategoriaDTO dto,
+            @ModelAttribute @Valid ProfessorDTO dto,
             BindingResult result, RedirectAttributes msg,
             @PathVariable(value = "id") int id) {
         if (result.hasErrors()) {
             msg.addFlashAttribute("Erro ao Inserir");
-            return "redirect:categoria/listar";
+            return "redirect:professores/listar";
         }
-        Optional<Categorias> cat = repository.findById(id);
-        var categoria = cat.get();
-        BeanUtils.copyProperties(dto, categoria);
-        repository.save(categoria);
-        msg.addFlashAttribute("SucessoCadastrar", "Categoria cadastrada com sucesso!");
-        return "redirect:/categoria/listar";
+        Optional<Professores> prof = repository.findById(id);
+        var professores = prof.get();
+        BeanUtils.copyProperties(dto, professores);
+        repository.save(professores);
+        msg.addFlashAttribute("SucessoCadastrar", "Professor cadastrado com sucesso!");
+        return "redirect:/professores/listar";
     }
 
 }

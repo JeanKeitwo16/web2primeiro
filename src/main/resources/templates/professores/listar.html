@@ -1,0 +1,13 @@
+<html xlms:ht="http://www.thymeleaf.otg">
+    <head></head>
+    <body>
+        <th:block th:include="professores/mensagens"></th:block>
+        
+        <div th:each="professores: ${professores}">
+            <p th:text="${professores.nome}"></p>
+            <p th:text="${professores.email}"></p>
+            <a th:href="@{/professores/editar/{id}(id=${professores.ID})}">Editar</a>
+            <a th:href="@{/professores/excluir/{id}(id=${professores.ID})}">Excluir</a>
+        </div>
+    </body>
+</html>
