@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${curso.nome}">Detalhes do Curso</title>
+    <style>
+        .course-details {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .course-image {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .detail-row {
+            margin-bottom: 15px;
+        }
+        .detail-label {
+            font-weight: bold;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="course-details" th:if="${curso}">
+        <h1 th:text="${curso.nome}"></h1>
+        
+        <img th:if="${curso.imagem}" th:src="${curso.imagem}" alt="Imagem do curso" class="course-image">
+        
+        <div class="detail-row">
+            <span class="detail-label">Descrição:</span>
+            <p th:text="${curso.descricao}"></p>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Período:</span>
+            <span th:if="${curso.dataInicio != null and curso.dataFim != null}">
+                <span th:text="${#dates.format(curso.dataInicio, 'dd/MM/yyyy')}"></span> a 
+                <span th:text="${#dates.format(curso.dataFim, 'dd/MM/yyyy')}"></span>
+            </span>
+            <span th:unless="${curso.dataInicio != null and curso.dataFim != null}">
+                Período não definido
+            </span>
+        </div>
+        
+        <div class="detail-row" th:if="${categoria}">
+            <span class="detail-label">Categoria:</span>
+            <span th:text="${categoria.nome}"></span>
+        </div>
+        
+        <div class="detail-row" th:if="${professor}">
+            <span class="detail-label">Professor:</span>
+            <span th:text="${professor.nome}"></span>
+            <span th:if="${professor.email}" th:text="'(' + ${professor.email} + ')'"></span>
+        </div>
+        
+        <a th:href="@{/cursos/listar}" class="back-link">← Voltar para a lista de cursos</a>
+    </div>
+</body>
+</html>

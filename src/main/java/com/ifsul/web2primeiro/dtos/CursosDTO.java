@@ -1,7 +1,74 @@
 package com.ifsul.web2primeiro.dtos;
 
-import jakarta.validation.constraints.NotBlank;
+import java.util.Date;
 
-public record CursosDTO(@NotBlank String nome, @NotBlank String descricao, @NotBlank String dataInicio, @NotBlank String dataFinal, @NotBlank String imagem, @NotBlank Integer professorId, @NotBlank Integer categoriaId) {
+public class CursosDTO {
+    private String nome;
+    private String descricao;
+    private Date dataInicio;
+    private Date dataFim;
+    private String imagem;
+    private Integer categoriaID;
+    private Integer professorID;
 
+    // Construtor vazio (OBRIGATÓRIO para Thymeleaf)
+    public CursosDTO() {
+    }
+
+    // Getters e Setters (todos obrigatórios)
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public Date getDataInicio() {
+        return dataInicio;
+    }
+
+    public void setDataInicio(Date dataInicio) {
+        this.dataInicio = dataInicio;
+    }
+
+    public Date getDataFim() {
+        return dataFim;
+    }
+
+    public void setDataFim(Date dataFim) {
+        this.dataFim = dataFim;
+    }
+
+    public String getImagem() {
+        return imagem;
+    }
+
+    public void setImagem(String imagem) {
+        this.imagem = imagem;
+    }
+
+    public Integer getCategoriaID() {
+        return categoriaID;
+    }
+
+    public void setCategoriaID(Integer categoriaID) {
+        this.categoriaID = categoriaID;
+    }
+
+    public Integer getProfessorID() {
+        return professorID;
+    }
+
+    public void setProfessorID(Integer professorID) {
+        this.professorID = professorID;
+    }
 }

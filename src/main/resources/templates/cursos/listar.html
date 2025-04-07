@@ -1,12 +1,70 @@
-<html xlms:ht="http://www.thymeleaf.otg">
-    <head></head>
-    <body>
-        <th:block th:include="categoria/mensagens"></th:block>
-        
-        <div th:each="categoria: ${categorias}">
-            <p th:text="${categoria.nome}"></p>
-            <a th:href="@{/categoria/editar/{id}(id=${categoria.ID})}">Editar</a>
-            <a th:href="@{/categoria/excluir/{id}(id=${categoria.ID})}">Excluir</a>
-        </div>
-    </body>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Cursos</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .actions a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #3498db;
+        }
+        .add-button {
+            display: inline-block;
+            margin-bottom: 1rem;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Cursos</h1>
+    <a th:href="@{/cursos/inserir}" class="add-button">Adicionar Novo Curso</a>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Data Início</th>
+                <th>Data Fim</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="curso : ${cursos}">
+                <td th:text="${curso.ID}"></td>
+                <td th:text="${curso.nome}"></td>
+                <td th:text="${curso.descricao != null} ? ${#strings.abbreviate(curso.descricao, 30)} : 'Sem descrição'"></td>
+                <td th:text="${curso.dataInicio != null} ? ${#dates.format(curso.dataInicio, 'dd/MM/yyyy')} : 'Não definida'"></td>
+                <td th:text="${curso.dataFim != null} ? ${#dates.format(curso.dataFim, 'dd/MM/yyyy')} : 'Não definida'"></td>
+                <td class="actions">
+                    <a th:href="@{/cursos/editar/{id}(id=${curso.ID})}">Editar</a>
+                    <a th:href="@{/cursos/excluir/{id}(id=${curso.ID})}">Excluir</a>
+                    <a th:href="@{/cursos/detalhes/{id}(id=${curso.ID})}">Detalhes</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
 </html>

@@ -1,10 +1,21 @@
-<html xlms:ht="http://www.thymeleaf.otg">
-    <head></head>
-    <body>
-        <form method="post">
-            Nome: <input type="text" name="nome" th:value="${nome}"/>
-            Email: <input type="text" name="email" th:value="${email}"/>
-            <br/>
-            <button type="submit">Enviar</button> 
-    </body>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Professor</title>
+</head>
+<body>
+    <h1>Editar Professor</h1>
+    <form method="post" th:action="@{/professores/editar/{id}(id=${professor.id})}">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" th:value="${professor.nome}" required />
+        <br/>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" th:value="${professor.email}" required />
+        <br/>
+        <button type="submit">Salvar</button>
+        <a href="/professores/listar">Cancelar</a>
+    </form>
+</body>
 </html>

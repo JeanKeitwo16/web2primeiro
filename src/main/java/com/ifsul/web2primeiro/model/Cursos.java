@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
-@Table(name="Cursos")
+@Table(name="cursos")
 public class Cursos implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
@@ -30,14 +30,8 @@ public class Cursos implements Serializable {
     public String getNome() {
         return nome;
     }
-    public String getEmail() {
+    public String getDescricao() {
         return descricao;
-    }
-    public Date getDataInicio() {
-        return dataInicio;
-    }
-    public Date getDataFim() {
-        return dataFim;
     }
     public int getCategoriaID() {
         return categoriaID;
@@ -57,12 +51,6 @@ public class Cursos implements Serializable {
     public void setNome(String nome) {
         this.nome = nome;
     }
-    public void setDataInicio (Date dataInicio) {
-        this.dataInicio = dataInicio;
-    }
-    public void setDataFim (Date dataFim) {
-        this.dataFim = dataFim;
-    }
     public void setImagem (String imagem) {
         this.imagem = imagem;
     }
@@ -71,5 +59,20 @@ public class Cursos implements Serializable {
     }
     public void setCategoriaID(int categoriaID) {
         this.categoriaID = categoriaID;
+    }
+    public Date getDataInicio() {
+        return dataInicio;
+    }
+    
+    public void setDataInicio(Date dataInicio) {
+        this.dataInicio = dataInicio;
+    }
+    
+    public Date getDataFim() {
+        return dataFim;
+    }
+    
+    public void setDataFim(Date dataFim) {
+        this.dataFim = dataFim;
     }
 }

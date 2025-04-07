@@ -1,12 +1,52 @@
-<html xlms:ht="http://www.thymeleaf.otg">
-    <head></head>
-    <body>
-        <th:block th:include="categoria/mensagens"></th:block>
-        
-        <div th:each="categoria: ${categorias}">
-            <p th:text="${categoria.nome}"></p>
-            <a th:href="@{/categoria/editar/{id}(id=${categoria.ID})}">Editar</a>
-            <a th:href="@{/categoria/excluir/{id}(id=${categoria.ID})}">Excluir</a>
-        </div>
-    </body>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Categorias</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .actions a {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Categorias</h1>
+    <a th:href="@{/categoria/inserir}">Adicionar Nova Categoria</a>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="categoria : ${categorias}">
+                <td th:text="${categoria.ID}"></td>
+                <td th:text="${categoria.nome}"></td>
+                <td class="actions">
+                    <a th:href="@{/categoria/editar/{id}(id=${categoria.ID})}">Editar</a>
+                    <a th:href="@{/categoria/excluir/{id}(id=${categoria.ID})}">Excluir</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
 </html>
