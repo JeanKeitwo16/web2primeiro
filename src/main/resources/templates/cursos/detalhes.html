@@ -3,30 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${curso.nome}">Detalhes do Curso</title>
-    <style>
-        .course-details {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .course-image {
-            max-width: 100%;
-            height: auto;
-            margin-bottom: 20px;
-        }
-        .detail-row {
-            margin-bottom: 15px;
-        }
-        .detail-label {
-            font-weight: bold;
-        }
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            color: #3498db;
-            text-decoration: none;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+<script th:src="@{/js/script.js}"></script>
 </head>
 <body>
     <div class="course-details" th:if="${curso}">

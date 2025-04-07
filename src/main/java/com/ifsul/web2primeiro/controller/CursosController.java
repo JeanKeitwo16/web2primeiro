@@ -1,5 +1,7 @@
 package com.ifsul.web2primeiro.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +15,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -54,22 +59,39 @@ public class CursosController {
     }
 
     @PostMapping("/inserir")
-    public String inserirCurso(
-            @ModelAttribute @Valid CursosDTO cursosDTO,
-            BindingResult result,
-            RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("erro", "Erro ao inserir curso. Verifique os dados.");
-            return "redirect:/cursos/inserir";
+public String inserirCurso(
+        @ModelAttribute @Valid CursosDTO cursosDTO,
+        BindingResult result,
+        RedirectAttributes redirectAttributes,
+        Model model) {
+
+    // Conversão manual das datas
+    try {
+        if (cursosDTO.getDataInicioStr() != null && !cursosDTO.getDataInicioStr().isEmpty()) {
+            cursosDTO.setDataInicio(new SimpleDateFormat("yyyy-MM-dd").parse(cursosDTO.getDataInicioStr()));
         }
-
-        Cursos curso = new Cursos();
-        BeanUtils.copyProperties(cursosDTO, curso);
-
-        repository.save(curso);
-        redirectAttributes.addFlashAttribute("sucesso", "Curso cadastrado com sucesso!");
-        return "redirect:/cursos/listar";
+        if (cursosDTO.getDataFimStr() != null && !cursosDTO.getDataFimStr().isEmpty()) {
+            cursosDTO.setDataFim(new SimpleDateFormat("yyyy-MM-dd").parse(cursosDTO.getDataFimStr()));
+        }
+    } catch (ParseException e) {
+        e.printStackTrace();
+        redirectAttributes.addFlashAttribute("erro", "Formato de data inválido");
+        return "redirect:/cursos/inserir";
     }
+
+    if (result.hasErrors()) {
+        model.addAttribute("categorias", categoriaRepository.findAll());
+        model.addAttribute("professores", professoresRepository.findAll());
+        return "cursos/inserir";
+    }
+
+    Cursos curso = new Cursos();
+    BeanUtils.copyProperties(cursosDTO, curso);
+
+    repository.save(curso);
+    redirectAttributes.addFlashAttribute("sucesso", "Curso cadastrado com sucesso!");
+    return "redirect:/cursos/listar";
+}
 
     @GetMapping("/detalhes/{id}")
     public ModelAndView detalhesCurso(@PathVariable Integer id) {
@@ -116,33 +138,67 @@ public class CursosController {
     }
 
     @GetMapping("/editar/{id}")
-    public ModelAndView editar(@PathVariable(value = "id") int id) {
-        ModelAndView mv = new ModelAndView("cursos/editar");
-        Optional<Cursos> curso = repository.findById(id);
-        if (curso.isPresent()) {
-            mv.addObject("curso", curso.get());
-        }
-        return mv;
+public ModelAndView editar(@PathVariable(value = "id") int id) {
+    ModelAndView mv = new ModelAndView("cursos/editar");
+    Optional<Cursos> cursoOpt = repository.findById(id);
+    
+    if (cursoOpt.isPresent()) {
+        Cursos curso = cursoOpt.get();
+        mv.addObject("curso", curso);
+        mv.addObject("categorias", categoriaRepository.findAll());
+        mv.addObject("professores", professoresRepository.findAll());
+    } else {
+        mv.setViewName("redirect:/cursos/listar");
     }
+    return mv;
+}
+    @GetMapping("/pesquisar")
+public ModelAndView pesquisar(@RequestParam String termo) {
+    ModelAndView mv = new ModelAndView("index"); // Assume que sua tela inicial é "index.html"
+    
+    // Implemente a pesquisa conforme sua necessidade
+    List<Cursos> cursos = repository.findByNomeContainingIgnoreCase(termo);
+    
+    mv.addObject("cursos", cursos);
+    mv.addObject("categorias", categoriaRepository.findAll()); // Mantém as categorias no menu
+    
+    return mv;
+}
 
     @PostMapping("/editar/{id}")
-    public String editado(
-            @ModelAttribute @Valid CursosDTO dto,
-            BindingResult result, RedirectAttributes msg,
-            @PathVariable(value = "id") int id) {
-        if (result.hasErrors()) {
-            msg.addFlashAttribute("erro", "Erro ao editar curso. Verifique os dados.");
-            return "redirect:/cursos/editar/" + id;
+public String editado(
+        @ModelAttribute @Valid Cursos curso,
+        BindingResult result, 
+        RedirectAttributes msg,
+        @PathVariable(value = "id") int id) {
+    
+    // Conversão manual das datas se necessário
+    try {
+        String dataInicioStr = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+            .getRequest().getParameter("dataInicioStr");
+        String dataFimStr = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+            .getRequest().getParameter("dataFimStr");
+        
+        if (dataInicioStr != null && !dataInicioStr.isEmpty()) {
+            curso.setDataInicio(new SimpleDateFormat("yyyy-MM-dd").parse(dataInicioStr));
         }
-        Optional<Cursos> cursoOpt = repository.findById(id);
-        if (cursoOpt.isEmpty()) {
-            msg.addFlashAttribute("erro", "Curso não encontrado!");
-            return "redirect:/cursos/listar";
+        if (dataFimStr != null && !dataFimStr.isEmpty()) {
+            curso.setDataFim(new SimpleDateFormat("yyyy-MM-dd").parse(dataFimStr));
         }
-        var curso = cursoOpt.get();
-        BeanUtils.copyProperties(dto, curso);
-        repository.save(curso);
-        msg.addFlashAttribute("sucesso", "Curso atualizado com sucesso!");
-        return "redirect:/cursos/listar";
+    } catch (ParseException e) {
+        e.printStackTrace();
+        msg.addFlashAttribute("erro", "Formato de data inválido");
+        return "redirect:/cursos/editar/" + id;
     }
+
+    if (result.hasErrors()) {
+        msg.addFlashAttribute("erro", "Erro ao editar curso. Verifique os dados.");
+        return "redirect:/cursos/editar/" + id;
+    }
+
+    curso.setID(id); // Garante que o ID correto será mantido
+    repository.save(curso);
+    msg.addFlashAttribute("sucesso", "Curso atualizado com sucesso!");
+    return "redirect:/cursos/listar";
+}
 }

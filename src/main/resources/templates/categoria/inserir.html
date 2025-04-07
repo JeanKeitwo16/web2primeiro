@@ -1,3 +1,7 @@
+<link rel="stylesheet" th:href="@{/css/styles.css}">
+<script th:src="@{/js/script.js}"></script>
+<div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+<div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
 <form method="post">
     Nome: <input type="text" name="nome"/>
     <br/>

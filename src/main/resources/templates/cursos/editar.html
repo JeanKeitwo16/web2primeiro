@@ -1,9 +1,95 @@
-<html xlms:ht="http://www.thymeleaf.otg">
-    <head></head>
-    <body>
-        <form method="post">
-            Nome: <input type="text" name="nome" th:value="${nome}"/>
-            <br/>
-            <button type="submit">Enviar</button> 
-    </body>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Curso</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+<script th:src="@{/js/script.js}"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Editar Curso</h1>
+        
+        <!-- Mensagens gerais -->
+        <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+        
+        <form th:action="@{/cursos/editar/{id}(id=${curso.ID})}" th:object="${curso}" method="post">
+            <!-- Campo Nome -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('nome')} ? 'has-error'">
+                <label for="nome">Nome do Curso:</label>
+                <input type="text" id="nome" th:field="*{nome}" 
+                       th:class="${#fields.hasErrors('nome')} ? 'form-control is-invalid' : 'form-control'"
+                       required>
+                <div class="error-message" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
+            </div>
+            
+            <!-- Campo Descrição -->
+            <div class="form-group">
+                <label for="descricao">Descrição:</label>
+                <textarea id="descricao" th:field="*{descricao}" class="form-control"></textarea>
+            </div>
+            
+            <!-- Campo Data Início -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('dataInicio')} ? 'has-error'">
+                <label for="dataInicio">Data de Início:</label>
+                <input type="date" id="dataInicio" name="dataInicioStr" 
+                       th:value="${curso.dataInicio != null} ? ${#dates.format(curso.dataInicio, 'yyyy-MM-dd')} : ''"
+                       class="form-control"
+                       th:class="${#fields.hasErrors('dataInicio')} ? 'form-control is-invalid' : 'form-control'">
+                <div class="error-message" th:if="${#fields.hasErrors('dataInicio')}" th:errors="*{dataInicio}"></div>
+            </div>
+            
+            <!-- Campo Data Fim -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('dataFim')} ? 'has-error'">
+                <label for="dataFim">Data de Término:</label>
+                <input type="date" id="dataFim" name="dataFimStr" 
+                       th:value="${curso.dataFim != null} ? ${#dates.format(curso.dataFim, 'yyyy-MM-dd')} : ''"
+                       class="form-control"
+                       th:class="${#fields.hasErrors('dataFim')} ? 'form-control is-invalid' : 'form-control'">
+                <div class="error-message" th:if="${#fields.hasErrors('dataFim')}" th:errors="*{dataFim}"></div>
+            </div>
+            
+            <!-- Campo Imagem -->
+            <div class="form-group">
+                <label for="imagem">URL da Imagem:</label>
+                <input type="text" id="imagem" th:field="*{imagem}" class="form-control">
+            </div>
+            
+            <!-- Campo Categoria -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('categoriaID')} ? 'has-error'">
+                <label for="categoriaID">Categoria:</label>
+                <select id="categoriaID" name="categoriaID" 
+                        th:class="${#fields.hasErrors('categoriaID')} ? 'form-control is-invalid' : 'form-control'"
+                        required>
+                    <option value="">Selecione uma categoria</option>
+                    <option th:each="categoria : ${categorias}" 
+                            th:value="${categoria.ID}"
+                            th:text="${categoria.nome}"
+                            th:selected="${#numbers.formatInteger(categoria.ID, 0) == #numbers.formatInteger(curso.categoriaID, 0)}"></option>
+                </select>
+                <div class="error-message" th:if="${#fields.hasErrors('categoriaID')}" th:errors="*{categoriaID}"></div>
+            </div>
+            
+            
+            <!-- Campo Professor -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('professorID')} ? 'has-error'">
+                <label for="professorID">Professor:</label>
+                <select id="professorID" name="professorID" 
+                        th:class="${#fields.hasErrors('professorID')} ? 'form-control is-invalid' : 'form-control'"
+                        required>
+                    <option value="">Selecione um professor</option>
+                    <option th:each="professor : ${professores}" 
+                            th:value="${professor.id}"
+                            th:text="${professor.nome}"
+                            th:selected="${#numbers.formatInteger(professor.id, 0) == #numbers.formatInteger(curso.professorID, 0)}"></option>
+                </select>
+                <div class="error-message" th:if="${#fields.hasErrors('professorID')}" th:errors="*{professorID}"></div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            <a th:href="@{/cursos/listar}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</body>
 </html>

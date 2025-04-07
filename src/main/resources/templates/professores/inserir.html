@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adicionar Professor</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+<script th:src="@{/js/script.js}"></script>
 </head>
 <body>
     <h1>Adicionar Professor</h1>
+    <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+    <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
     <form method="post" th:action="@{/professores/inserir}">
         <label for="nome">Nome:</label>
         <input type="text" id="nome" name="nome" placeholder="Digite o nome" required />
