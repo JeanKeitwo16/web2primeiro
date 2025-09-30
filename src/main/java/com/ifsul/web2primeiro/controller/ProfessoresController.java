@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -17,7 +18,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ifsul.web2primeiro.dtos.ProfessorDTO;
 import com.ifsul.web2primeiro.model.Professores;
+import com.ifsul.web2primeiro.model.Cursos;
 import com.ifsul.web2primeiro.repository.ProfessoresRepository;
+import com.ifsul.web2primeiro.repository.CursosRepository;
 
 import jakarta.validation.Valid;
 
@@ -26,6 +29,9 @@ import jakarta.validation.Valid;
 public class ProfessoresController {
     @Autowired
     ProfessoresRepository repository;
+    
+    @Autowired
+    CursosRepository cursosRepository;
 
     @GetMapping("/inserir")
     public String inserir() {
@@ -37,13 +43,14 @@ public class ProfessoresController {
             @ModelAttribute @Valid ProfessorDTO dto,
             BindingResult result, RedirectAttributes msg) {
         if (result.hasErrors()) {
-            return "professores/inserir"; // Retorna à página de inserção se houver erros
+            msg.addFlashAttribute("erro", "Erro ao cadastrar professor. Verifique os dados.");
+            return "professores/inserir";
         }
         var professores = new Professores();
         BeanUtils.copyProperties(dto, professores);
-        repository.save(professores); // Salva o professor no banco de dados
-        msg.addFlashAttribute("SucessoCadastrar", "Professor cadastrado com sucesso!");
-        return "redirect:/professores/listar"; // Redireciona para a página de listagem
+        repository.save(professores);
+        msg.addFlashAttribute("sucesso", "Professor cadastrado com sucesso!");
+        return "redirect:/professores/listar";
     }
 
     @GetMapping("/listar")
@@ -55,12 +62,36 @@ public class ProfessoresController {
     }
 
     @GetMapping("/excluir/{id}")
-    public String excluir(@PathVariable(value = "id") int id) {
-        Optional<Professores> professores = repository.findById(id);
-        if (professores.isEmpty()) {
+    public String confirmarExclusao(@PathVariable(value = "id") int id, Model model) {
+        Optional<Professores> professor = repository.findById(id);
+        if (professor.isEmpty()) {
             return "redirect:/professores/listar";
         }
+        
+        List<Cursos> cursos = cursosRepository.findByProfessorID(id);
+        model.addAttribute("professor", professor.get());
+        model.addAttribute("cursos", cursos);
+        
+        return "professores/confirmar-exclusao";
+    }
+
+    @PostMapping("/excluir/{id}")
+    public String excluir(@PathVariable(value = "id") int id, RedirectAttributes msg) {
+        Optional<Professores> professor = repository.findById(id);
+        if (professor.isEmpty()) {
+            msg.addFlashAttribute("erro", "Professor não encontrado!");
+            return "redirect:/professores/listar";
+        }
+        
+        List<Cursos> cursos = cursosRepository.findByProfessorID(id);
+        if (!cursos.isEmpty()) {
+            msg.addFlashAttribute("erro", 
+                "Não é possível excluir o professor pois existem cursos vinculados a ele.");
+            return "redirect:/professores/listar";
+        }
+        
         repository.deleteById(id);
+        msg.addFlashAttribute("sucesso", "Professor excluído com sucesso!");
         return "redirect:/professores/listar";
     }
 
@@ -82,7 +113,7 @@ public class ProfessoresController {
             BindingResult result, RedirectAttributes msg,
             @PathVariable(value = "id") int id) {
         if (result.hasErrors()) {
-            msg.addFlashAttribute("ErroEditar", "Erro ao editar professor.");
+            msg.addFlashAttribute("erro", "Erro ao editar professor. Verifique os dados.");
             return "redirect:/professores/editar/" + id;
         }
         Optional<Professores> prof = repository.findById(id);
@@ -90,7 +121,7 @@ public class ProfessoresController {
             var professores = prof.get();
             BeanUtils.copyProperties(dto, professores);
             repository.save(professores);
-            msg.addFlashAttribute("SucessoEditar", "Professor editado com sucesso!");
+            msg.addFlashAttribute("sucesso", "Professor atualizado com sucesso!");
         }
         return "redirect:/professores/listar";
     }

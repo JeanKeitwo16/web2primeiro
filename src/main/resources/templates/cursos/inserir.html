@@ -2,87 +2,111 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar Novo Curso</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
-<script th:src="@{/js/script.js}"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/dark-theme.css}">
 </head>
 <body>
-    <div class="container">
-        <h1>Cadastrar Novo Curso</h1>
-        
-        <!-- Mensagens gerais -->
-        <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
-        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
-        
-        <form th:action="@{/cursos/inserir}" th:object="${cursosDTO}" method="post">
-            <!-- Campo Nome -->
-            <div class="form-group" th:classappend="${#fields.hasErrors('nome')} ? 'has-error'">
-                <label for="nome">Nome do Curso:</label>
-                <input type="text" id="nome" th:field="*{nome}" 
-                       th:class="${#fields.hasErrors('nome')} ? 'form-control is-invalid' : 'form-control'"
-                       required>
-                <div class="error-message" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">Cursos Online</a>
+            <div class="d-flex">
+                <a class="btn btn-outline-success mx-2" th:href="@{/cursos/listar}">Cursos</a>
+                <a class="btn btn-outline-success mx-2" th:href="@{/professores/listar}">Professores</a>
+                <a class="btn btn-outline-success mx-2" th:href="@{/categoria/listar}">Categorias</a>
             </div>
-            
-            <!-- Campo Descrição -->
-            <div class="form-group">
-                <label for="descricao">Descrição:</label>
-                <textarea id="descricao" th:field="*{descricao}" class="form-control"></textarea>
+        </div>
+    </nav>
+
+    <main class="container my-5">
+        <div class="list-container p-4 rounded" style="background-color: var(--surface-bg);">
+            <div class="listing-header">
+                <h1 class="listing-title">Cadastrar Novo Curso</h1>
             </div>
+
+            <div th:if="${erro}" class="alert alert-danger-dark" th:text="${erro}"></div>
+            <div th:if="${sucesso}" class="alert alert-success-dark" th:text="${sucesso}"></div>
             
-            <!-- Campo Data Início -->
-            <div class="form-group" th:classappend="${#fields.hasErrors('dataInicio')} ? 'has-error'">
-                <label for="dataInicio">Data de Início:</label>
-                <input type="date" id="dataInicio" name="dataInicioStr" 
-       th:value="${cursosDTO.dataInicio != null} ? ${#dates.format(cursosDTO.dataInicio, 'yyyy-MM-dd')} : ''">
-                <div class="error-message" th:if="${#fields.hasErrors('dataInicio')}" th:errors="*{dataInicio}"></div>
-            </div>
-            
-            <!-- Campo Data Fim -->
-            <div class="form-group" th:classappend="${#fields.hasErrors('dataFim')} ? 'has-error'">
-                <label for="dataFim">Data de Término:</label>
-                <input type="date" id="dataFim" name="dataFimStr" 
-       th:value="${cursosDTO.dataFim != null} ? ${#dates.format(cursosDTO.dataFim, 'yyyy-MM-dd')} : ''">
-                <div class="error-message" th:if="${#fields.hasErrors('dataFim')}" th:errors="*{dataFim}"></div>
-            </div>
-            
-            <!-- Campo Imagem -->
-            <div class="form-group">
-                <label for="imagem">URL da Imagem:</label>
-                <input type="text" id="imagem" th:field="*{imagem}" class="form-control">
-            </div>
-            
-            <!-- Campo Categoria -->
-            <div class="form-group" th:classappend="${#fields.hasErrors('categoriaID')} ? 'has-error'">
-                <label for="categoriaID">Categoria:</label>
-                <select id="categoriaID" th:field="*{categoriaID}" 
-                        th:class="${#fields.hasErrors('categoriaID')} ? 'form-control is-invalid' : 'form-control'"
-                        required>
-                    <option value="">Selecione uma categoria</option>
-                    <option th:each="categoria : ${categorias}" 
-                            th:value="${categoria.ID}"
-                            th:text="${categoria.nome}"></option>
-                </select>
-                <div class="error-message" th:if="${#fields.hasErrors('categoriaID')}" th:errors="*{categoriaID}"></div>
-            </div>
-            
-            <!-- Campo Professor -->
-            <div class="form-group" th:classappend="${#fields.hasErrors('professorID')} ? 'has-error'">
-                <label for="professorID">Professor:</label>
-                <select id="professorID" th:field="*{professorID}" 
-                        th:class="${#fields.hasErrors('professorID')} ? 'form-control is-invalid' : 'form-control'"
-                        required>
-                    <option value="">Selecione um professor</option>
-                    <option th:each="professor : ${professores}" 
-                            th:value="${professor.id}"
-                            th:text="${professor.nome}"></option>
-                </select>
-                <div class="error-message" th:if="${#fields.hasErrors('professorID')}" th:errors="*{professorID}"></div>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Cadastrar</button>
-            <a th:href="@{/cursos/listar}" class="btn btn-secondary">Cancelar</a>
-        </form>
-    </div>
+            <form th:action="@{/cursos/inserir}" th:object="${cursosDTO}" method="post" class="mt-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="nome" class="form-label">Nome do Curso</label>
+                        <input type="text" id="nome" th:field="*{nome}" 
+                               class="form-control" 
+                               th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid' : ''"
+                               required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="categoriaID" class="form-label">Categoria</label>
+                        <select id="categoriaID" th:field="*{categoriaID}" 
+                                class="form-select"
+                                th:classappend="${#fields.hasErrors('categoriaID')} ? 'is-invalid' : ''"
+                                required>
+                            <option value="">Selecione uma categoria</option>
+                            <option th:each="categoria : ${categorias}" 
+                                    th:value="${categoria.ID}"
+                                    th:text="${categoria.nome}"></option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('categoriaID')}" th:errors="*{categoriaID}"></div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="professorID" class="form-label">Professor</label>
+                        <select id="professorID" th:field="*{professorID}" 
+                                class="form-select"
+                                th:classappend="${#fields.hasErrors('professorID')} ? 'is-invalid' : ''"
+                                required>
+                            <option value="">Selecione um professor</option>
+                            <option th:each="professor : ${professores}" 
+                                    th:value="${professor.id}"
+                                    th:text="${professor.nome}"></option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('professorID')}" th:errors="*{professorID}"></div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="imagem" class="form-label">URL da Imagem</label>
+                        <input type="text" id="imagem" th:field="*{imagem}" class="form-control">
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="dataInicio" class="form-label">Data de Início</label>
+                        <input type="date" id="dataInicio" name="dataInicioStr" 
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('dataInicio')} ? 'is-invalid' : ''"
+                               th:value="${cursosDTO.dataInicio != null} ? ${#dates.format(cursosDTO.dataInicio, 'yyyy-MM-dd')} : ''">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('dataInicio')}" th:errors="*{dataInicio}"></div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="dataFim" class="form-label">Data de Término</label>
+                        <input type="date" id="dataFim" name="dataFimStr" 
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('dataFim')} ? 'is-invalid' : ''"
+                               th:value="${cursosDTO.dataFim != null} ? ${#dates.format(cursosDTO.dataFim, 'yyyy-MM-dd')} : ''">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('dataFim')}" th:errors="*{dataFim}"></div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea id="descricao" th:field="*{descricao}" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">Cadastrar</button>
+                            <a th:href="@{/cursos/listar}" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ifsul.web2primeiro.dtos.CursosDTO;
@@ -32,173 +31,173 @@ import com.ifsul.web2primeiro.repository.ProfessoresRepository;
 import jakarta.validation.Valid;
 
 @Controller
-@RequestMapping("/cursos")
+@RequestMapping("/")
 public class CursosController {
 
-    @Autowired
-    CursosRepository repository;
-    CategoriaRepository categoriaRepository;
-    ProfessoresRepository professoresRepository;
+    private final CursosRepository cursosRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final ProfessoresRepository professoresRepository;
 
-    @GetMapping("/inserir")
+    @Autowired
+    public CursosController(CursosRepository cursosRepository,
+                          CategoriaRepository categoriaRepository,
+                          ProfessoresRepository professoresRepository) {
+        this.cursosRepository = cursosRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.professoresRepository = professoresRepository;
+    }
+
+    @GetMapping
+    public String home(Model model) {
+        model.addAttribute("cursos", cursosRepository.findAll());
+        model.addAttribute("categorias", categoriaRepository.findAll());
+        model.addAttribute("hasSearchTerm", false); // Adicionado
+        model.addAttribute("isSearch", false); // Adicionado flag de pesquisa
+        return "index";
+    }
+    
+    @GetMapping("/cursos/listar")
+    public String listarCursos(Model model) {
+        model.addAttribute("cursos", cursosRepository.findAll());
+        return "cursos/listar";
+    }
+
+    @GetMapping("/categoria/{id}")
+public String cursosPorCategoria(@PathVariable Integer id, Model model) {
+    List<Cursos> cursos = cursosRepository.findByCategoriaID(id);
+    Optional<Categorias> categoria = categoriaRepository.findById(id);
+    
+    model.addAttribute("cursos", cursos);
+    model.addAttribute("categorias", categoriaRepository.findAll());
+    model.addAttribute("categoriaSelecionada", categoria.orElse(null));
+    model.addAttribute("isSearch", false); // Adicionado flag de pesquisa
+    
+    return "index";
+}
+
+@GetMapping("/pesquisar")
+public String pesquisar(@RequestParam String termo, Model model) {
+    List<Cursos> cursos = cursosRepository.findByNomeContainingIgnoreCase(termo);
+    
+    model.addAttribute("cursos", cursos);
+    model.addAttribute("categorias", categoriaRepository.findAll());
+    model.addAttribute("termoPesquisa", termo);
+    model.addAttribute("isSearch", true); // Adicionado flag de pesquisa
+    
+    return "index";
+}
+
+    @GetMapping("/cursos/inserir")
     public String exibirFormulario(Model model) {
-        // Use apenas o construtor vazio
         model.addAttribute("cursosDTO", new CursosDTO());
         model.addAttribute("categorias", categoriaRepository.findAll());
         model.addAttribute("professores", professoresRepository.findAll());
         return "cursos/inserir";
     }
 
-    @Autowired
-    public CursosController(CursosRepository repository,
-                          CategoriaRepository categoriaRepository,
-                          ProfessoresRepository professoresRepository) {
-        this.repository = repository;
-        this.categoriaRepository = categoriaRepository;
-        this.professoresRepository = professoresRepository;
-    }
-
-    @PostMapping("/inserir")
-public String inserirCurso(
-        @ModelAttribute @Valid CursosDTO cursosDTO,
-        BindingResult result,
-        RedirectAttributes redirectAttributes,
-        Model model) {
-
-    // Conversão manual das datas
-    try {
-        if (cursosDTO.getDataInicioStr() != null && !cursosDTO.getDataInicioStr().isEmpty()) {
-            cursosDTO.setDataInicio(new SimpleDateFormat("yyyy-MM-dd").parse(cursosDTO.getDataInicioStr()));
+    @PostMapping("/cursos/inserir")
+    public String inserirCurso(@ModelAttribute @Valid CursosDTO cursosDTO,
+                             BindingResult result,
+                             RedirectAttributes redirectAttributes,
+                             Model model) {
+        try {
+            if (cursosDTO.getDataInicioStr() != null && !cursosDTO.getDataInicioStr().isEmpty()) {
+                cursosDTO.setDataInicio(new SimpleDateFormat("yyyy-MM-dd").parse(cursosDTO.getDataInicioStr()));
+            }
+            if (cursosDTO.getDataFimStr() != null && !cursosDTO.getDataFimStr().isEmpty()) {
+                cursosDTO.setDataFim(new SimpleDateFormat("yyyy-MM-dd").parse(cursosDTO.getDataFimStr()));
+            }
+        } catch (ParseException e) {
+            redirectAttributes.addFlashAttribute("erro", "Formato de data inválido");
+            return "redirect:/cursos/inserir";
         }
-        if (cursosDTO.getDataFimStr() != null && !cursosDTO.getDataFimStr().isEmpty()) {
-            cursosDTO.setDataFim(new SimpleDateFormat("yyyy-MM-dd").parse(cursosDTO.getDataFimStr()));
+
+        if (result.hasErrors()) {
+            model.addAttribute("categorias", categoriaRepository.findAll());
+            model.addAttribute("professores", professoresRepository.findAll());
+            return "cursos/inserir";
         }
-    } catch (ParseException e) {
-        e.printStackTrace();
-        redirectAttributes.addFlashAttribute("erro", "Formato de data inválido");
-        return "redirect:/cursos/inserir";
+
+        Cursos curso = new Cursos();
+        BeanUtils.copyProperties(cursosDTO, curso);
+        cursosRepository.save(curso);
+        redirectAttributes.addFlashAttribute("sucesso", "Curso cadastrado com sucesso!");
+        return "redirect:/";
     }
 
-    if (result.hasErrors()) {
-        model.addAttribute("categorias", categoriaRepository.findAll());
-        model.addAttribute("professores", professoresRepository.findAll());
-        return "cursos/inserir";
-    }
-
-    Cursos curso = new Cursos();
-    BeanUtils.copyProperties(cursosDTO, curso);
-
-    repository.save(curso);
-    redirectAttributes.addFlashAttribute("sucesso", "Curso cadastrado com sucesso!");
-    return "redirect:/cursos/listar";
-}
-
-    @GetMapping("/detalhes/{id}")
-    public ModelAndView detalhesCurso(@PathVariable Integer id) {
-        ModelAndView mv = new ModelAndView("cursos/detalhes");
-        Optional<Cursos> cursoOpt = repository.findById(id);
+    @GetMapping("/cursos/detalhes/{id}")
+    public String detalhesCurso(@PathVariable Integer id, Model model) {
+        Optional<Cursos> cursoOpt = cursosRepository.findById(id);
         
         if (cursoOpt.isPresent()) {
             Cursos curso = cursoOpt.get();
-            mv.addObject("curso", curso);
+            model.addAttribute("curso", curso);
             
-            // Carrega a categoria relacionada
             Optional<Categorias> categoria = categoriaRepository.findById(curso.getCategoriaID());
-            categoria.ifPresent(cat -> mv.addObject("categoria", cat));
+            categoria.ifPresent(cat -> model.addAttribute("categoria", cat));
             
-            // Carrega o professor relacionado
             Optional<Professores> professor = professoresRepository.findById(curso.getProfessorID());
-            professor.ifPresent(prof -> mv.addObject("professor", prof));
+            professor.ifPresent(prof -> model.addAttribute("professor", prof));
             
-        } else {
-            mv.setViewName("redirect:/cursos/listar");
+            return "cursos/detalhes";
         }
+        return "redirect:/";
+    }
+
+    @GetMapping("/cursos/editar/{id}")
+    public String editar(@PathVariable Integer id, Model model) {
+        Optional<Cursos> cursoOpt = cursosRepository.findById(id);
         
-        return mv;
+        if (cursoOpt.isPresent()) {
+            model.addAttribute("curso", cursoOpt.get());
+            model.addAttribute("categorias", categoriaRepository.findAll());
+            model.addAttribute("professores", professoresRepository.findAll());
+            return "cursos/editar";
+        }
+        return "redirect:/";
     }
 
-    @GetMapping("/listar")
-    public ModelAndView listar() {
-        ModelAndView mv = new ModelAndView("cursos/listar");
-        List<Cursos> lista = repository.findAll();
-        mv.addObject("cursos", lista);
-        return mv;
+    @PostMapping("/cursos/editar/{id}")
+    public String editado(@ModelAttribute @Valid Cursos curso,
+                         BindingResult result,
+                         RedirectAttributes msg,
+                         @PathVariable Integer id) {
+        try {
+            String dataInicioStr = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+                .getRequest().getParameter("dataInicioStr");
+            String dataFimStr = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+                .getRequest().getParameter("dataFimStr");
+            
+            if (dataInicioStr != null && !dataInicioStr.isEmpty()) {
+                curso.setDataInicio(new SimpleDateFormat("yyyy-MM-dd").parse(dataInicioStr));
+            }
+            if (dataFimStr != null && !dataFimStr.isEmpty()) {
+                curso.setDataFim(new SimpleDateFormat("yyyy-MM-dd").parse(dataFimStr));
+            }
+        } catch (ParseException e) {
+            msg.addFlashAttribute("erro", "Formato de data inválido");
+            return "redirect:/cursos/editar/" + id;
+        }
+
+        if (result.hasErrors()) {
+            return "cursos/editar";
+        }
+
+        curso.setID(id);
+        cursosRepository.save(curso);
+        msg.addFlashAttribute("sucesso", "Curso atualizado com sucesso!");
+        return "redirect:/";
     }
 
-    @GetMapping("/excluir/{id}")
-    public String excluir(@PathVariable(value = "id") int id, RedirectAttributes msg) {
-        Optional<Cursos> curso = repository.findById(id);
+    @GetMapping("/cursos/excluir/{id}")
+    public String excluir(@PathVariable Integer id, RedirectAttributes msg) {
+        Optional<Cursos> curso = cursosRepository.findById(id);
         if (curso.isEmpty()) {
             msg.addFlashAttribute("erro", "Curso não encontrado!");
-            return "redirect:/cursos/listar";
+            return "redirect:/";
         }
-        repository.deleteById(id);
+        cursosRepository.deleteById(id);
         msg.addFlashAttribute("sucesso", "Curso excluído com sucesso!");
-        return "redirect:/cursos/listar";
+        return "redirect:/";
     }
-
-    @GetMapping("/editar/{id}")
-public ModelAndView editar(@PathVariable(value = "id") int id) {
-    ModelAndView mv = new ModelAndView("cursos/editar");
-    Optional<Cursos> cursoOpt = repository.findById(id);
-    
-    if (cursoOpt.isPresent()) {
-        Cursos curso = cursoOpt.get();
-        mv.addObject("curso", curso);
-        mv.addObject("categorias", categoriaRepository.findAll());
-        mv.addObject("professores", professoresRepository.findAll());
-    } else {
-        mv.setViewName("redirect:/cursos/listar");
-    }
-    return mv;
-}
-    @GetMapping("/pesquisar")
-public ModelAndView pesquisar(@RequestParam String termo) {
-    ModelAndView mv = new ModelAndView("index"); // Assume que sua tela inicial é "index.html"
-    
-    // Implemente a pesquisa conforme sua necessidade
-    List<Cursos> cursos = repository.findByNomeContainingIgnoreCase(termo);
-    
-    mv.addObject("cursos", cursos);
-    mv.addObject("categorias", categoriaRepository.findAll()); // Mantém as categorias no menu
-    
-    return mv;
-}
-
-    @PostMapping("/editar/{id}")
-public String editado(
-        @ModelAttribute @Valid Cursos curso,
-        BindingResult result, 
-        RedirectAttributes msg,
-        @PathVariable(value = "id") int id) {
-    
-    // Conversão manual das datas se necessário
-    try {
-        String dataInicioStr = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-            .getRequest().getParameter("dataInicioStr");
-        String dataFimStr = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-            .getRequest().getParameter("dataFimStr");
-        
-        if (dataInicioStr != null && !dataInicioStr.isEmpty()) {
-            curso.setDataInicio(new SimpleDateFormat("yyyy-MM-dd").parse(dataInicioStr));
-        }
-        if (dataFimStr != null && !dataFimStr.isEmpty()) {
-            curso.setDataFim(new SimpleDateFormat("yyyy-MM-dd").parse(dataFimStr));
-        }
-    } catch (ParseException e) {
-        e.printStackTrace();
-        msg.addFlashAttribute("erro", "Formato de data inválido");
-        return "redirect:/cursos/editar/" + id;
-    }
-
-    if (result.hasErrors()) {
-        msg.addFlashAttribute("erro", "Erro ao editar curso. Verifique os dados.");
-        return "redirect:/cursos/editar/" + id;
-    }
-
-    curso.setID(id); // Garante que o ID correto será mantido
-    repository.save(curso);
-    msg.addFlashAttribute("sucesso", "Curso atualizado com sucesso!");
-    return "redirect:/cursos/listar";
-}
 }

@@ -2,39 +2,87 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Cursos</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
-<script th:src="@{/js/script.js}"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/dark-theme.css}">
 </head>
 <body>
-    <h1>Lista de Cursos</h1>
-    <a th:href="@{/cursos/inserir}" class="add-button">Adicionar Novo Curso</a>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Descrição</th>
-                <th>Data Início</th>
-                <th>Data Fim</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="curso : ${cursos}">
-                <td th:text="${curso.ID}"></td>
-                <td th:text="${curso.nome}"></td>
-                <td th:text="${curso.descricao != null} ? ${#strings.abbreviate(curso.descricao, 30)} : 'Sem descrição'"></td>
-                <td th:text="${curso.dataInicio != null} ? ${#dates.format(curso.dataInicio, 'dd/MM/yyyy')} : 'Não definida'"></td>
-                <td th:text="${curso.dataFim != null} ? ${#dates.format(curso.dataFim, 'dd/MM/yyyy')} : 'Não definida'"></td>
-                <td class="actions">
-                    <a th:href="@{/cursos/editar/{id}(id=${curso.ID})}">Editar</a>
-                    <a th:href="@{/cursos/excluir/{id}(id=${curso.ID})}">Excluir</a>
-                    <a th:href="@{/cursos/detalhes/{id}(id=${curso.ID})}">Detalhes</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">Cursos Online</a>
+            <div class="d-flex">
+                <a class="btn btn-outline-success mx-2" th:href="@{/cursos/listar}">Cursos</a>
+                <a class="btn btn-outline-success mx-2" th:href="@{/professores/listar}">Professores</a>
+                <a class="btn btn-outline-success mx-2" th:href="@{/categoria/listar}">Categorias</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-5">
+        <div class="list-container">
+            <div class="listing-header d-flex justify-content-between align-items-center mb-4">
+                <h1 class="listing-title">Lista de Cursos</h1>
+                <a th:href="@{/cursos/inserir}" class="btn btn-success">
+                    <i class="bi bi-plus-lg"></i> Adicionar Curso
+                </a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Período</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="curso : ${cursos}">
+                            <td th:text="${curso.ID}"></td>
+                            <td>
+                                <span th:text="${curso.nome}"></span>
+                                <span th:if="${curso.imagem}" class="badge bg-success ms-2">
+                                    <i class="bi bi-image"></i>
+                                </span>
+                            </td>
+                            <td th:text="${curso.descricao != null} ? ${#strings.abbreviate(curso.descricao, 50)} : 'Sem descrição'"></td>
+                            <td>
+                                <span th:if="${curso.dataInicio != null and curso.dataFim != null}">
+                                    <span th:text="${#dates.format(curso.dataInicio, 'dd/MM/yyyy')}"></span> a<br>
+                                    <span th:text="${#dates.format(curso.dataFim, 'dd/MM/yyyy')}"></span>
+                                </span>
+                                <span th:unless="${curso.dataInicio != null and curso.dataFim != null}" class="text-muted">
+                                    Não definido
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a th:href="@{/cursos/detalhes/{id}(id=${curso.ID})}" class="btn btn-sm btn-outline-success" title="Detalhes">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a th:href="@{/cursos/editar/{id}(id=${curso.ID})}" class="btn btn-sm btn-outline-warning" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a th:href="@{/cursos/excluir/{id}(id=${curso.ID})}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div th:if="${cursos != null and cursos.empty}" class="alert alert-info-dark text-center mt-4">
+                Nenhum curso cadastrado no momento.
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
